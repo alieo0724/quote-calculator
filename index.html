@@ -1,63 +1,386 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>代購報價計算器</title>
   <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;margin:16px}
-    h1{font-size:20px}
-    label{display:block;margin-top:10px}
-    input{width:100%;padding:8px;margin-top:4px}
-    .box{border:1px solid #ccc;border-radius:8px;padding:12px;margin-top:12px}
+    :root{
+      --bg:#0b0f14;
+      --card:#0f1620;
+      --card2:#0c121a;
+      --text:#e8eef7;
+      --muted:#a7b3c6;
+      --line:rgba(255,255,255,.08);
+      --accent:#4ea1ff;
+      --danger:#ff4d5a;
+      --ok:#35d07f;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(78,161,255,.25), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(53,208,127,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px
+    }
+    .title{
+      display:flex;flex-direction:column;gap:2px
+    }
+    h1{font-size:20px;margin:0}
+    .sub{font-size:12px;color:var(--muted)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 30%), var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:#d9e6ff;
+      letter-spacing:.2px;
+    }
+    .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    @media (max-width: 520px){
+      .row,.row3{grid-template-columns:1fr}
+    }
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus,select:focus,textarea:focus{
+      border-color: rgba(78,161,255,.55);
+      box-shadow: 0 0 0 3px rgba(78,161,255,.15);
+    }
+    .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    button{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    button.primary{
+      background: rgba(78,161,255,.18);
+      border-color: rgba(78,161,255,.45);
+    }
+    button.primary:hover{background: rgba(78,161,255,.26)}
+    button:hover{filter:brightness(1.05)}
+    button.danger{
+      background: rgba(255,77,90,.12);
+      border-color: rgba(255,77,90,.35);
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%), var(--card2);
+    }
+    .pill .k{font-size:12px;color:var(--muted)}
+    .pill .v{font-size:18px;font-weight:800;letter-spacing:.2px}
+    .pill .v small{font-size:12px;color:var(--muted);font-weight:700;margin-left:6px}
+    .pillRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    @media (max-width:520px){.pillRow{grid-template-columns:1fr}}
+    .table{
+      margin-top:12px;border-top:1px solid var(--line);padding-top:10px
+    }
+    .trow{display:flex;justify-content:space-between;gap:12px;padding:7px 0}
+    .trow .k{color:var(--muted);font-size:12px}
+    .trow .v{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+    .toast{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(53,208,127,.35);
+      background: rgba(53,208,127,.10);
+      color: #dfffee;
+      font-size:12px;
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .small{font-size:12px;color:var(--muted)}
   </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>代購報價計算器</h1>
+        <div class="sub">自用版本｜支援 kg / lb（磅）運費計價｜即時計算</div>
+      </div>
+      <div class="small mono" id="siteHint">v2</div>
+    </div>
 
-<h1>代購報價計算器（測試版）</h1>
+    <div class="grid">
+      <!-- INPUT -->
+      <div class="card">
+        <h2>輸入</h2>
 
-<div class="box">
-  <label>商品價格（外幣）</label>
-  <input id="price" type="number" value="0">
+        <div class="row">
+          <div>
+            <label>商品名稱</label>
+            <input id="name" placeholder="例如：Stussy Tee" />
+          </div>
+          <div>
+            <label>數量</label>
+            <input id="qty" type="number" min="1" value="1" />
+          </div>
+        </div>
 
-  <label>匯率</label>
-  <input id="rate" type="number" value="32">
+        <div class="row">
+          <div>
+            <label>商品價格（外幣）</label>
+            <input id="sourcePrice" type="number" step="0.01" value="0" />
+          </div>
+          <div>
+            <label>匯率（1 外幣 = ? TWD）</label>
+            <input id="fxRate" type="number" step="0.0001" value="32" />
+          </div>
+        </div>
 
-  <label>重量（kg）</label>
-  <input id="weight" type="number" value="0">
+        <div class="row">
+          <div>
+            <label>重量</label>
+            <input id="weight" type="number" step="0.01" value="1" />
+          </div>
+          <div>
+            <label>重量單位（用來計運費）</label>
+            <select id="weightUnit">
+              <option value="kg">kg（公斤）</option>
+              <option value="lb">lb（磅）</option>
+            </select>
+          </div>
+        </div>
 
-  <label>運費（每 kg）</label>
-  <input id="ship" type="number" value="250">
+        <div class="row">
+          <div>
+            <label>運費單價</label>
+            <input id="shipRate" type="number" step="1" value="250" />
+          </div>
+          <div>
+            <label>毛利率（%）</label>
+            <input id="gm" type="number" step="0.1" value="30" />
+          </div>
+        </div>
 
-  <label>毛利率（%）</label>
-  <input id="margin" type="number" value="30">
-</div>
+        <div class="hint">
+          • 你選 <b>lb</b> 時：運費 = 重量(lb) × 運費單價(每 lb)<br/>
+          • 你選 <b>kg</b> 時：運費 = 重量(kg) × 運費單價(每 kg)<br/>
+          • 售價公式：<span class="mono">售價 = (外幣成本×匯率 + 運費) ÷ (1-毛利率)</span>
+        </div>
 
-<div class="box">
-  <p>總成本：<span id="cost">0</span> 元</p>
-  <p>建議售價：<span id="sell">0</span> 元</p>
-</div>
+        <div class="actions">
+          <button class="primary" id="copyBtn">一鍵複製報價文字</button>
+          <button id="resetBtn">重設</button>
+          <button id="printBtn">列印/存成PDF</button>
+        </div>
+
+        <div class="toast" id="toast">已複製到剪貼簿 ✅</div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="card">
+        <h2>結果</h2>
+
+        <div class="pillRow">
+          <div class="pill">
+            <div>
+              <div class="k">單件總成本</div>
+              <div class="v" id="totalCost">0 <small>TWD</small></div>
+            </div>
+          </div>
+          <div class="pill">
+            <div>
+              <div class="k">建議單價</div>
+              <div class="v" id="unitPrice">0 <small>TWD</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table">
+          <div class="trow">
+            <div class="k">外幣成本（換算TWD）</div>
+            <div class="v" id="costTWD">0</div>
+          </div>
+          <div class="trow">
+            <div class="k">運費（依你選的單位計價）</div>
+            <div class="v" id="shipTWD">0</div>
+          </div>
+          <div class="hr"></div>
+          <div class="trow">
+            <div class="k">總金額（乘數量）</div>
+            <div class="v" id="totalAmount">0</div>
+          </div>
+          <div class="trow">
+            <div class="k">預估利潤（乘數量）</div>
+            <div class="v" id="profit">0</div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="small">
+            參考：你的重量換算約為 <span class="mono" id="weightInfo">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
-function calc(){
-  const price = Number(document.getElementById("price").value);
-  const rate = Number(document.getElementById("rate").value);
-  const weight = Number(document.getElementById("weight").value);
-  const ship = Number(document.getElementById("ship").value);
-  const margin = Number(document.getElementById("margin").value) / 100;
+  const $ = (id) => document.getElementById(id);
 
-  const cost = price * rate + weight * ship;
-  const sell = cost / (1 - margin);
+  const LB_TO_KG = 0.45359237;
 
-  document.getElementById("cost").innerText = Math.round(cost);
-  document.getElementById("sell").innerText = Math.round(sell);
-}
+  function n(v){
+    const x = parseFloat(v);
+    return Number.isFinite(x) ? x : 0;
+  }
+  function r2(x){
+    return Math.round((x + Number.EPSILON) * 100) / 100;
+  }
+  function fmtTWD(x){
+    // 你可以改成 Math.round 讓它不顯示小數
+    return Math.round(x).toLocaleString("zh-TW");
+  }
 
-document.querySelectorAll("input").forEach(i=>{
-  i.addEventListener("input", calc);
-});
-calc();
+  function calc(){
+    const name = $("name").value.trim();
+    const qty = Math.max(1, Math.floor(n($("qty").value) || 1));
+
+    const sourcePrice = n($("sourcePrice").value);
+    const fxRate = n($("fxRate").value);
+
+    const weight = n($("weight").value);
+    const unit = $("weightUnit").value; // kg or lb
+    const shipRate = n($("shipRate").value); // per selected unit
+
+    const gm = n($("gm").value) / 100;
+
+    // 成本（TWD）
+    const costTWD = sourcePrice * fxRate;
+
+    // 運費（TWD）：依「你選的單位」計價
+    // 如果你輸入 lb 且運費是每 lb，直接 weight*shipRate
+    // 如果你輸入 kg 且運費是每 kg，直接 weight*shipRate
+    const shipTWD = weight * shipRate;
+
+    // 單件總成本、售價
+    const totalCost = costTWD + shipTWD;
+    const unitPrice = (gm >= 1) ? Infinity : totalCost / (1 - gm);
+
+    // 總金額、利潤（乘數量）
+    const totalAmount = unitPrice * qty;
+    const profit = totalAmount - totalCost * qty;
+
+    // 顯示
+    $("costTWD").textContent = fmtTWD(costTWD);
+    $("shipTWD").textContent = fmtTWD(shipTWD);
+    $("totalCost").textContent = fmtTWD(totalCost) + " ";
+    $("unitPrice").textContent = fmtTWD(unitPrice) + " ";
+    $("totalAmount").textContent = fmtTWD(totalAmount);
+    $("profit").textContent = fmtTWD(profit);
+
+    // 參考重量換算顯示
+    const weightKg = unit === "kg" ? weight : weight * LB_TO_KG;
+    const weightLb = unit === "lb" ? weight : (weight / LB_TO_KG);
+    $("weightInfo").textContent =
+      `${r2(weightKg)} kg  /  ${r2(weightLb)} lb`;
+
+    // 回傳給複製功能用
+    return { name, qty, sourcePrice, fxRate, weight, unit, shipRate, gmPct: r2(gm*100),
+             costTWD, shipTWD, totalCost, unitPrice, totalAmount, profit };
+  }
+
+  function showToast(){
+    const t = $("toast");
+    t.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>{ t.style.display = "none"; }, 1300);
+  }
+
+  function copyQuote(){
+    const q = calc();
+    const unitLabel = q.unit === "lb" ? "lb" : "kg";
+    const text =
+`【代購報價】
+品項：${q.name || "（未命名）"}
+數量：${q.qty}
+
+外幣價格：${q.sourcePrice}
+匯率：${q.fxRate}
+重量：${q.weight} ${unitLabel}
+運費單價：${q.shipRate} / ${unitLabel}
+毛利率：${q.gmPct}%
+
+單件總成本：${fmtTWD(q.totalCost)} TWD
+建議單價：${fmtTWD(q.unitPrice)} TWD
+總金額：${fmtTWD(q.totalAmount)} TWD`;
+
+    navigator.clipboard.writeText(text).then(showToast).catch(()=>{
+      // 退而求其次
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast();
+    });
+  }
+
+  function resetAll(){
+    $("name").value = "";
+    $("qty").value = 1;
+    $("sourcePrice").value = 0;
+    $("fxRate").value = 32;
+    $("weight").value = 1;
+    $("weightUnit").value = "kg";
+    $("shipRate").value = 250;
+    $("gm").value = 30;
+    calc();
+  }
+
+  // 綁事件：即時計算
+  ["name","qty","sourcePrice","fxRate","weight","weightUnit","shipRate","gm"].forEach(id=>{
+    $(id).addEventListener("input", calc);
+    $(id).addEventListener("change", calc);
+  });
+
+  $("copyBtn").addEventListener("click", copyQuote);
+  $("resetBtn").addEventListener("click", resetAll);
+  $("printBtn").addEventListener("click", ()=>window.print());
+
+  // init
+  calc();
 </script>
-
 </body>
 </html>
