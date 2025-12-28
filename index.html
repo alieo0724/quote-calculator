@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>代購報價計算器</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;margin:16px}
+    h1{font-size:20px}
+    label{display:block;margin-top:10px}
+    input{width:100%;padding:8px;margin-top:4px}
+    .box{border:1px solid #ccc;border-radius:8px;padding:12px;margin-top:12px}
+  </style>
+</head>
+<body>
+
+<h1>代購報價計算器（測試版）</h1>
+
+<div class="box">
+  <label>商品價格（外幣）</label>
+  <input id="price" type="number" value="0">
+
+  <label>匯率</label>
+  <input id="rate" type="number" value="32">
+
+  <label>重量（kg）</label>
+  <input id="weight" type="number" value="0">
+
+  <label>運費（每 kg）</label>
+  <input id="ship" type="number" value="250">
+
+  <label>毛利率（%）</label>
+  <input id="margin" type="number" value="30">
+</div>
+
+<div class="box">
+  <p>總成本：<span id="cost">0</span> 元</p>
+  <p>建議售價：<span id="sell">0</span> 元</p>
+</div>
+
+<script>
+function calc(){
+  const price = Number(document.getElementById("price").value);
+  const rate = Number(document.getElementById("rate").value);
+  const weight = Number(document.getElementById("weight").value);
+  const ship = Number(document.getElementById("ship").value);
+  const margin = Number(document.getElementById("margin").value) / 100;
+
+  const cost = price * rate + weight * ship;
+  const sell = cost / (1 - margin);
+
+  document.getElementById("cost").innerText = Math.round(cost);
+  document.getElementById("sell").innerText = Math.round(sell);
+}
+
+document.querySelectorAll("input").forEach(i=>{
+  i.addEventListener("input", calc);
+});
+calc();
+</script>
+
+</body>
+</html>
